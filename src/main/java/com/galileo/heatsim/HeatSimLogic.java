@@ -4,81 +4,32 @@ import java.util.Random;
 
 public class HeatSimLogic {
 
-    double[][] grid;
+    Grid grid;
     Random rand = new Random(1);
-    int clickedCellX = -1, clickedCellY = -1;
 
     //n - grid size
-    public HeatSimLogic(int w, int h) {
-        grid = new double[w][h];
+    public HeatSimLogic(int width, int height) {
+        grid = new Grid(width, height);
     }
 
+    public void heatRandomPoint(int numberOfPoints) {
 
-
-    public double[][] getGrid() {
-        return grid;
-    }
-
-
-    public void heatRandomPoint(int n) {
-
-        for(int i = 0; i < n; i++) {
-            int x = rand.nextInt(grid.length);
-            int y = rand.nextInt(grid[0].length);
-            double old;
+        for(int i = 0; i < numberOfPoints; i++) {
+            Cell randomCell;
             do {
-                old = grid[x][y];
-                grid[x][y] = 100;
-                x = rand.nextInt(grid.length);
-                y = rand.nextInt(grid[0].length);
-            }while(old != 0);
+                randomCell = grid.getRandomCellWithinBorder(rand);
+            }while(randomCell.getTemperature() > 0);
+            randomCell.setTemperature(100);
         }
     }
 
-    public void heatUpCell(int y, int x) {
-        grid[x][y] += 0.5;
-        if(grid[x][y] > 100) {grid[x][y] = 100;}
-    }
 
     public boolean calculateGrid() {
 
-        double maxChange = 0;
+        grid.recalculateGrid();
+        return grid.MAXIMUM_TEMPERATURE_CHANGE <= HeatSimulationApp.TEMPERATURE_CHANGE_THRESHOLD;
 
-        for(int i = 0; i < grid.length; i++) {
-
-            for(int j = 0; j < grid[i].length; j++) {
-
-                if((i == clickedCellX && j == clickedCellY)) break;
-
-                double old = grid[i][j];
-                if(grid[i][j] != 100) {
-                grid[i][j] = grid[i][(j == grid[i].length-1) ? j : j + 1] +
-                                grid[(i == grid.length-1) ? i : i + 1][j] +
-                                grid[i][(j == 0) ? j : j-1] + grid[(i == 0) ? i : i - 1][j];
-                grid[i][j] /= 4;
-                }
-                double change = Math.abs(old - grid[i][j]);
-                if(change > maxChange) {maxChange = change;}
-
-
-
-
-
-            }
-        }
-
-
-
-        //robi konstanta 0C
-        /*
-        for(int i = 0; i < grid.length; i++) {
-            for(int j = 0; j < grid[i].length; j++) {
-                if(i == 0 || j == 0 ||i == grid.length - 1 || j == grid[i].length - 1) {
-                    grid[i][j] = 0;
-                }
-            }
-        }
-         */
-        return !(maxChange <= 0.25);
     }
+
+
 }

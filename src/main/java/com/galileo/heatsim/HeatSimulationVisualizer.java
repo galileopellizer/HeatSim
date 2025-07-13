@@ -11,9 +11,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+
+import javafx.scene.input.MouseEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -85,17 +88,28 @@ public class HeatSimulationVisualizer {
         }
     }
 
-    public void drawGrid(GraphicsContext gc, double[][] grid) {
+    public void drawGrid(GraphicsContext gc, Grid grid) {
         for (int i = 0; i < GRID_WIDTH; i++) {
             for (int j = 0; j < GRID_HEIGHT; j++) {
 
-                gc.setFill(getColor(grid[i][j])); // Začetna barva
+                gc.setFill(getColor(grid.getCell(i, j, false).getTemperature())); // Začetna barva
                 gc.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 
                 if(CELL_SIZE > 3) {
                     gc.setStroke(Color.BLACK); // Mrežna črta
                     gc.strokeRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                 }
+                /*
+                // Draw temperature as text, debugging
+                gc.setFill(Color.BLACK);
+                gc.setFont(new Font(10));
+                gc.fillText(
+                        String.format("%.0f", grid.getCell(i, j, false).getTemperature()),
+                        i * CELL_SIZE + 2,
+                        j * CELL_SIZE + 12
+                );
+                */
+
             }
         }
     }
@@ -144,10 +158,16 @@ public class HeatSimulationVisualizer {
     }
 
 
+    HeatSimLogic logic;
+    AtomicBoolean isMousePressed = new AtomicBoolean(false);
+    AtomicInteger cellX = new AtomicInteger();
+    AtomicInteger cellY = new AtomicInteger();
+    Cell clickedCell = null;
 
     public Canvas initializeUI(Stage stage, HeatSimLogic logic, int w, int h) {
         GRID_WIDTH = w;
         GRID_HEIGHT = h;
+        this.logic = logic;
 
         double max = Math.max(GRID_WIDTH, GRID_HEIGHT);
         CELL_SIZE = 500 / max;
@@ -155,7 +175,7 @@ public class HeatSimulationVisualizer {
 
         Canvas gridCanvas = new Canvas(GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
         GraphicsContext gc = gridCanvas.getGraphicsContext2D();
-        drawGrid(gc, logic.getGrid());
+        drawGrid(gc, logic.grid);
 
         StackPane root = new StackPane();
         //root.getChildren().add(gridCanvas);
@@ -190,31 +210,12 @@ public class HeatSimulationVisualizer {
 
 
         //--------------- USER HAS THE OPTION TO CLICK AND HEAT UP THAT POINT - PARALLEL ----------------------------
-        AtomicBoolean isMousePressed = new AtomicBoolean(false);
-        AtomicInteger cellX = new AtomicInteger();
-        AtomicInteger cellY = new AtomicInteger();
-
-        gridCanvas.setOnMousePressed(event -> {
-            double mouseX = event.getX();
-            double mouseY = event.getY();
-
-            cellX.set((int) (mouseX / CELL_SIZE));
-            cellY.set((int) (mouseY / CELL_SIZE));
 
 
-            if (cellX.get() >= 0 && cellX.get() < GRID_WIDTH && cellY.get() >= 0 && cellY.get() < GRID_HEIGHT) {
-
-                logic.clickedCellX = cellX.get();
-                logic.clickedCellY = cellY.get();
-            }
-            if (event.isPrimaryButtonDown()) {
-                isMousePressed.set(true);
-            }
-        });
+        gridCanvas.setOnMousePressed(this::mousePressed);
 
         gridCanvas.setOnMouseReleased(event -> {
-            logic.clickedCellX = -1;
-            logic.clickedCellY = -1;
+            //clickedCell.setClicked(false);
             isMousePressed.set(false);
         });
 
@@ -222,8 +223,11 @@ public class HeatSimulationVisualizer {
             @Override
             public void handle(long now) {
                 if (isMousePressed.get()) {
-                    logic.heatUpCell(cellY.get(), cellX.get());
-                    drawGrid(gc, logic.getGrid());
+                    Cell cell = logic.grid.getCell(cellX.get(), cellY.get(), true);
+                    if(cell != null) {
+                        logic.grid.heatUpCell(cell);
+                        drawGrid(gc, logic.grid);
+                    }
                 }
             }
         };
@@ -244,5 +248,22 @@ public class HeatSimulationVisualizer {
         stage.setScene(scene);
         stage.show();
         return gridCanvas;
+    }
+
+    private void mousePressed(MouseEvent event) {
+        double mouseX = event.getX();
+        double mouseY = event.getY();
+
+        cellX.set((int) (mouseX / CELL_SIZE));
+        cellY.set((int) (mouseY / CELL_SIZE));
+
+        clickedCell = logic.grid.getCell(cellX.get(), cellY.get(), true);
+
+        if (clickedCell != null) {
+            clickedCell.setClicked(true);
+        }
+        if (event.isPrimaryButtonDown()) {
+            isMousePressed.set(true);
+        }
     }
 }
