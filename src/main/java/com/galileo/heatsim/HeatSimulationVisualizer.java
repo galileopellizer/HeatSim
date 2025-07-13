@@ -29,8 +29,6 @@ public class HeatSimulationVisualizer {
     private static final int MIN_MARGIN = 50; // priporoceno 50, razdalja med labels
 
     private void drawLegend(ObservableList<Text> leftLabels, ObservableList<Text> bottomLabels) {
-
-
         int stepX = 1;
         int stepY = 1;
 
@@ -40,13 +38,7 @@ public class HeatSimulationVisualizer {
         int labelMarginX = gridWidthPX / (GRID_WIDTH / stepX);
         int labelMarginY = gridHeightPX / (GRID_HEIGHT / stepY);
 
-
-
-
         stepY = (labelMarginY < MIN_MARGIN) ? 5 : stepY;
-
-
-
 
         //steps vrednosti 1, 5, 10
         while(labelMarginY < MIN_MARGIN) {
@@ -75,10 +67,6 @@ public class HeatSimulationVisualizer {
 
         }
 
-
-
-
-
         for (int i = stepY; i <= GRID_HEIGHT; i += stepY) {
             Text leftText = new Text(String.valueOf(i));
             leftText.setFill(Color.BLACK);
@@ -95,14 +83,7 @@ public class HeatSimulationVisualizer {
             bottomText.setTranslateX(CELL_SIZE * i  - (CELL_SIZE / 2));
             bottomLabels.add(bottomText);
         }
-
-
-
-
-
-
     }
-
 
     public void drawGrid(GraphicsContext gc, double[][] grid) {
         for (int i = 0; i < GRID_WIDTH; i++) {
@@ -184,14 +165,7 @@ public class HeatSimulationVisualizer {
         legend.setTranslateX((GRID_WIDTH * CELL_SIZE) / 2 + 50); // Premakni desno od mreže
         legend.setTranslateY(0); // Poravnano z mrežo
 
-
-
-
-
         StackPane numbers = new StackPane();
-
-
-
 
 
         //numbers.setTranslateX(-((GRID_WIDTH * CELL_SIZE) / 2) - 15);
@@ -230,8 +204,8 @@ public class HeatSimulationVisualizer {
 
             if (cellX.get() >= 0 && cellX.get() < GRID_WIDTH && cellY.get() >= 0 && cellY.get() < GRID_HEIGHT) {
 
-                logic.accessedX = cellX.get();
-                logic.accessedY = cellY.get();
+                logic.clickedCellX = cellX.get();
+                logic.clickedCellY = cellY.get();
             }
             if (event.isPrimaryButtonDown()) {
                 isMousePressed.set(true);
@@ -239,8 +213,8 @@ public class HeatSimulationVisualizer {
         });
 
         gridCanvas.setOnMouseReleased(event -> {
-            logic.accessedX = -1;
-            logic.accessedY =  -1;
+            logic.clickedCellX = -1;
+            logic.clickedCellY = -1;
             isMousePressed.set(false);
         });
 

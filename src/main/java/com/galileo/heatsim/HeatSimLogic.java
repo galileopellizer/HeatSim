@@ -6,13 +6,11 @@ public class HeatSimLogic {
 
     double[][] grid;
     Random rand = new Random(1);
-    int accessedX = -1, accessedY = -1;
+    int clickedCellX = -1, clickedCellY = -1;
 
     //n - grid size
     public HeatSimLogic(int w, int h) {
-        System.out.println("HeatSimLogic");
         grid = new double[w][h];
-
     }
 
 
@@ -50,7 +48,8 @@ public class HeatSimLogic {
 
             for(int j = 0; j < grid[i].length; j++) {
 
-                if(!(i == accessedX && j == accessedY)) {
+                if((i == clickedCellX && j == clickedCellY)) break;
+
                 double old = grid[i][j];
                 if(grid[i][j] != 100) {
                 grid[i][j] = grid[i][(j == grid[i].length-1) ? j : j + 1] +
@@ -61,7 +60,10 @@ public class HeatSimLogic {
                 double change = Math.abs(old - grid[i][j]);
                 if(change > maxChange) {maxChange = change;}
 
-                }
+
+
+
+
             }
         }
 
@@ -76,7 +78,6 @@ public class HeatSimLogic {
                 }
             }
         }
-
          */
         return !(maxChange <= 0.25);
     }
