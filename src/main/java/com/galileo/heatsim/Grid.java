@@ -6,8 +6,7 @@ public class Grid {
     Cell[][] grid;
     int width;
     int height;
-    static double HEATING_RATE = 0.5;
-    double MAXIMUM_TEMPERATURE_CHANGE = 100;
+    double maxTempChange = 100;
 
 
     public Grid(int width, int height) {
@@ -23,7 +22,7 @@ public class Grid {
     public Grid(Grid other) {
         this.width = other.width;
         this.height = other.height;
-        this.MAXIMUM_TEMPERATURE_CHANGE = other.MAXIMUM_TEMPERATURE_CHANGE;
+        this.maxTempChange = other.maxTempChange;
         this.grid = new Cell[width][height];
 
         for (int i = 0; i < height; i++) {
@@ -43,7 +42,7 @@ public class Grid {
     }
 
     public void heatUpCell(Cell cell) {
-        cell.raiseTemperature(HEATING_RATE);
+        cell.raiseTemperature(Settings.HEATING_RATE);
     }
 
     public Cell[] getNeighbors(Cell cell) {
@@ -98,7 +97,7 @@ public class Grid {
 
                 double change = Math.abs(tempBeforeCalculation - cell.getTemperature());
 
-                if(change < this.MAXIMUM_TEMPERATURE_CHANGE) {this.MAXIMUM_TEMPERATURE_CHANGE = change;}
+                if(change < this.maxTempChange) {this.maxTempChange = change;}
                 //System.out.println("Maximum temperature change: " + this.MAXIMUM_TEMPERATURE_CHANGE);
             }
         }

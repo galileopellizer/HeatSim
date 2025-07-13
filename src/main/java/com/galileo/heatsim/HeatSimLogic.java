@@ -27,7 +27,7 @@ public class HeatSimLogic {
     public boolean calculateGrid() {
 
         grid.recalculateGrid();
-        return grid.MAXIMUM_TEMPERATURE_CHANGE <= HeatSimulationApp.TEMPERATURE_CHANGE_THRESHOLD;
+        return grid.maxTempChange <= Settings.TEMPERATURE_CHANGE_THRESHOLD;
 
     }
 

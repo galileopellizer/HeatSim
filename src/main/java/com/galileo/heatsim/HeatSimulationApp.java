@@ -3,7 +3,6 @@ package com.galileo.heatsim;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import javafx.scene.canvas.GraphicsContext;
 
@@ -12,12 +11,6 @@ public class HeatSimulationApp extends Application {
 
     //randPoints -> 0 in CHECK_TEMP -> false (za najboljsi effect - ni nujno), nato lahko klikaš po posameznih celicah, ko jih segreješ do 100 ostanejo konstantno 100
 
-    private final int GRID_WIDTH = 50;
-    private final int GRID_HEIGHT = 50;
-    private final int RANDOM_POINTS_NUM = 50;
-    private final boolean GRAPHICS_ENABLED = true;
-    private final boolean CHECK_TEMP = false; // true  - program bo prenehal simulacijo ko ne bo spremembe vecje od 0.25C
-    public static final double TEMPERATURE_CHANGE_THRESHOLD = 0.025;
 
     private static HeatSimLogic logic;
 
@@ -27,7 +20,7 @@ public class HeatSimulationApp extends Application {
         //stage.show();
 
         HeatSimulationVisualizer visualizer = new HeatSimulationVisualizer();
-        Canvas canvas = visualizer.initializeUI(stage, logic, GRID_WIDTH, GRID_HEIGHT);
+        Canvas canvas = visualizer.initializeUI(stage, logic, Settings.GRID_WIDTH, Settings.GRID_HEIGHT);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
 
@@ -53,7 +46,7 @@ public class HeatSimulationApp extends Application {
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if(logic.calculateGrid() && CHECK_TEMP) {
+                if(logic.calculateGrid() && Settings.END_SIM_ON_TEMPERATURE_THRESHOLD_REACHED) {
                     long endTime = System.currentTimeMillis();
                     long elapsedTime = endTime - startTime;
                      System.out.println("Simulation ended");
@@ -100,11 +93,11 @@ public class HeatSimulationApp extends Application {
     public static void main(String[] args) {
 
         HeatSimulationApp app = new HeatSimulationApp();
-        logic = new HeatSimLogic(app.GRID_WIDTH, app.GRID_HEIGHT);
-        logic.heatRandomPoint(app.RANDOM_POINTS_NUM);
+        logic = new HeatSimLogic(Settings.GRID_WIDTH, Settings.GRID_HEIGHT);
+        logic.heatRandomPoint(Settings.RANDOM_POINTS_NUM);
         System.out.println("Simulation started");
 
-        if(app.GRAPHICS_ENABLED) {
+        if(Settings.GRAPHICS_ENABLED) {
             launch(args);
         }else {
             app.runHeadLessSimulation();
