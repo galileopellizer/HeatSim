@@ -1,5 +1,7 @@
-package com.galileo.heatsim;
+package heatsim;
 
+import heatsim.simulation.Cell;
+import heatsim.simulation.Grid;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

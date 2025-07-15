@@ -1,4 +1,4 @@
-package com.galileo.heatsim;
+package heatsim.simulation;
 
 public class Cell {
     private double temperature;

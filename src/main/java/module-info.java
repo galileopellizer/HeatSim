@@ -1,9 +1,13 @@
-module com.example.heatsim {
+module heatsim {
     requires javafx.controls;
     requires javafx.fxml;
     requires org.controlsfx.controls;
     requires jdk.unsupported.desktop;
 
-    opens com.galileo.heatsim to javafx.fxml;
-    exports com.galileo.heatsim;
+    exports heatsim.simulation;
+    opens heatsim.simulation to javafx.fxml;
+    exports heatsim.ui;
+    opens heatsim.ui to javafx.fxml;
+    exports heatsim.settings;
+    opens heatsim.settings to javafx.fxml;
 }

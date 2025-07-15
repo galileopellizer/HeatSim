@@ -1,4 +1,6 @@
-package com.galileo.heatsim;
+package heatsim.simulation;
+
+import heatsim.settings.Settings;
 
 import java.util.Random;
 
@@ -7,6 +9,7 @@ public class Grid {
     int width;
     int height;
     double maxTempChange = 100;
+    public static int totalCalculations = 0;
 
 
     public Grid(int width, int height) {
@@ -42,7 +45,7 @@ public class Grid {
     }
 
     public void heatUpCell(Cell cell) {
-        cell.raiseTemperature(Settings.HEATING_RATE);
+        cell.raiseTemperature(Settings.CLICK_HEATING_RATE);
     }
 
     public Cell[] getNeighbors(Cell cell) {
@@ -81,6 +84,7 @@ public class Grid {
 
                 Cell cellCopy = gridCopy.getCell(i, j, true);
                 if (cellCopy == null || cellCopy.isClicked()) continue;
+                totalCalculations++;
                 double tempBeforeCalculation = cellCopy.getTemperature();
 
                 Cell[] neighbors = gridCopy.getNeighbors(cellCopy);

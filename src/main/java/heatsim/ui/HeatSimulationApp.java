@@ -1,5 +1,8 @@
-package com.galileo.heatsim;
+package heatsim.ui;
 
+import heatsim.settings.Settings;
+import heatsim.simulation.Grid;
+import heatsim.simulation.HeatSimLogic;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.canvas.Canvas;
@@ -51,6 +54,7 @@ public class HeatSimulationApp extends Application {
                     long elapsedTime = endTime - startTime;
                      System.out.println("Simulation ended");
                       System.out.println("Elapsed time: " + elapsedTime + "ms");
+                    System.out.println("Total calculations: " + Grid.totalCalculations);
                     stop();
                 }
                 visualizer.drawGrid(gc, logic.grid);
@@ -96,6 +100,7 @@ public class HeatSimulationApp extends Application {
         logic = new HeatSimLogic(Settings.GRID_WIDTH, Settings.GRID_HEIGHT);
         logic.heatRandomPoint(Settings.RANDOM_POINTS_NUM);
         System.out.println("Simulation started");
+        System.out.println("Total calculations: " + Grid.totalCalculations);
 
         if(Settings.GRAPHICS_ENABLED) {
             launch(args);

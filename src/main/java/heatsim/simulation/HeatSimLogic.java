@@ -1,10 +1,12 @@
-package com.galileo.heatsim;
+package heatsim.simulation;
+
+import heatsim.settings.Settings;
 
 import java.util.Random;
 
 public class HeatSimLogic {
 
-    Grid grid;
+    public Grid grid;
     Random rand = new Random(1);
 
     //n - grid size

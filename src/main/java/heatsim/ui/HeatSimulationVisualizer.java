@@ -1,5 +1,8 @@
-package com.galileo.heatsim;
+package heatsim.ui;
 
+import heatsim.simulation.Cell;
+import heatsim.simulation.Grid;
+import heatsim.simulation.HeatSimLogic;
 import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,7 +14,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
