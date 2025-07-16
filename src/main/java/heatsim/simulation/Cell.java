@@ -1,8 +1,10 @@
 package heatsim.simulation;
 
+import heatsim.settings.Settings;
+
 public class Cell {
     private double temperature;
-    static double HEAT_RETENTION_THRESHOLD = 100;
+
 
     private final int x;
     private final int y;
@@ -37,12 +39,16 @@ public class Cell {
         return temperature;
     }
     public void setTemperature(double temperature) {
-        if(this.temperature >= HEAT_RETENTION_THRESHOLD) return;
+        if(temperatureAboveThreshold()) return;
         this.temperature = temperature;
     }
     public void raiseTemperature(double amount) {
-        if(this.temperature >= HEAT_RETENTION_THRESHOLD) return;
+        if(temperatureAboveThreshold()) return;
         this.temperature += amount;
+    }
+
+    private boolean temperatureAboveThreshold() {
+        return this.temperature >= Settings.HEAT_RETENTION_THRESHOLD;
     }
 
     public int getX() {

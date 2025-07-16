@@ -1,7 +1,6 @@
 package heatsim.simulation;
 
 import heatsim.settings.Settings;
-
 import java.util.Random;
 
 public class Grid {
@@ -35,13 +34,11 @@ public class Grid {
         }
     }
 
-
-    public Cell[][] getGrid() {
-        return grid;
-    }
-
     public Cell getRandomCellWithinBorder(Random random) {
-        return grid[random.nextInt(1, width-1)][random.nextInt(1, height-1)];
+        int borderWidth = Settings.BORDER_WIDTH;
+        int x = random.nextInt(borderWidth, width-borderWidth);
+        int y = random.nextInt(borderWidth, height-borderWidth);
+        return grid[x][y];
     }
 
     public void heatUpCell(Cell cell) {
@@ -53,21 +50,29 @@ public class Grid {
         int cellX = cell.getX();
         int cellY = cell.getY();
 
-        neighbors[0] = getCell(cellX-1, cellY, false);
-        neighbors[1] = getCell(cellX+1, cellY, false);
-        neighbors[2] = getCell(cellX, cellY-1, false);
-        neighbors[3] = getCell(cellX, cellY+1, false);
+        neighbors[0] = getCell(cellX-1, cellY);
+        neighbors[1] = getCell(cellX+1, cellY);
+        neighbors[2] = getCell(cellX, cellY-1);
+        neighbors[3] = getCell(cellX, cellY+1);
+
 
         return neighbors;
 
     }
 
-    public Cell getCell(int x, int y, boolean withinBorder) {
+    public Cell getCell(int x, int y) {
+        if(x >= 0 && x <= width-1 && y >= 0 && y <= height-1) {
+            return grid[x][y];
+        }else {
+            return null;
+        }
+    }
 
-        int offset = withinBorder ? 1 : 0;
+    public Cell getCellWithinBorder(int x, int y) {
+        int offset = Settings.BORDER_WIDTH;
 
-        int upperXBoundary = width-(1+offset);
-        int upperYBoundary = height-(1+offset);
+        int upperXBoundary = width-(1 + offset);
+        int upperYBoundary = height-(1 + offset);
 
         if(x >= offset && x <= upperXBoundary && y >= offset && y <= upperYBoundary) {
             return grid[x][y];
@@ -82,18 +87,19 @@ public class Grid {
         for (int i = 0; i < this.height; i++) {
             for (int j = 0; j < this.width; j++) {
 
-                Cell cellCopy = gridCopy.getCell(i, j, true);
-                if (cellCopy == null || cellCopy.isClicked()) continue;
-                totalCalculations++;
+                Cell cellCopy = gridCopy.getCellWithinBorder(i, j);
+                if(!shouldCalculateCell(cellCopy)) continue;
+
                 double tempBeforeCalculation = cellCopy.getTemperature();
 
                 Cell[] neighbors = gridCopy.getNeighbors(cellCopy);
-                double totalTemperature = 0;
-                for (Cell neighbor : neighbors) {
-                    totalTemperature += neighbor.getTemperature();
-                }
+                double totalTemperature = sumTemperature(neighbors);
                 totalTemperature /= neighbors.length;
-                Cell cell = this.getCell(cellCopy.getX(), cellCopy.getY(), true);
+
+                if(totalTemperature == 0) continue; // Needs testing
+                totalCalculations++;
+
+                Cell cell = this.getCellWithinBorder(cellCopy.getX(), cellCopy.getY());
                 cell.setTemperature(totalTemperature);
 
 
@@ -102,8 +108,19 @@ public class Grid {
                 double change = Math.abs(tempBeforeCalculation - cell.getTemperature());
 
                 if(change < this.maxTempChange) {this.maxTempChange = change;}
-                //System.out.println("Maximum temperature change: " + this.MAXIMUM_TEMPERATURE_CHANGE);
             }
         }
+    }
+
+    private double sumTemperature(Cell[] cells) {
+        double sum = 0;
+        for(Cell cell : cells) {
+            sum += cell.getTemperature();
+        }
+        return sum;
+    }
+
+    private boolean shouldCalculateCell(Cell cell) {
+        return !(cell == null || cell.isClicked());
     }
 }

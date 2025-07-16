@@ -2,7 +2,7 @@ package heatsim.ui;
 
 import heatsim.settings.Settings;
 import heatsim.simulation.Grid;
-import heatsim.simulation.HeatSimLogic;
+import heatsim.simulation.Logic;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.canvas.Canvas;
@@ -15,7 +15,7 @@ public class HeatSimulationApp extends Application {
     //randPoints -> 0 in CHECK_TEMP -> false (za najboljsi effect - ni nujno), nato lahko klikaš po posameznih celicah, ko jih segreješ do 100 ostanejo konstantno 100
 
 
-    private static HeatSimLogic logic;
+    private static Logic logic;
 
     @Override
     public void start(Stage stage) {
@@ -49,7 +49,7 @@ public class HeatSimulationApp extends Application {
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if(logic.calculateGrid() && Settings.END_SIM_ON_TEMPERATURE_THRESHOLD_REACHED) {
+                if(logic.recalculateAndCheckStability() && Settings.END_SIM_ON_TEMPERATURE_THRESHOLD_REACHED) {
                     long endTime = System.currentTimeMillis();
                     long elapsedTime = endTime - startTime;
                      System.out.println("Simulation ended");
@@ -62,45 +62,28 @@ public class HeatSimulationApp extends Application {
         };
 
         timer.start();
-
-
-
-
-/*
-        // grafika sekvencno - no animation :(
-        System.out.println("Simulation started");
-        long startTime = System.currentTimeMillis();
-        while(logic.calculateGrid()) {
-            visualizer.drawGrid(gc, logic.getGrid());
-        }
-        long endTime = System.currentTimeMillis();
-        long elapsedTime = endTime - startTime;
-        System.out.println("Simulation ended");
-        System.out.println("Elapsed time: " + elapsedTime + "ms");
-
-*/
-
     }
 
     public void runHeadLessSimulation() {
 
         long startTime = System.currentTimeMillis();
-        while(logic.calculateGrid()) {
+        while(logic.recalculateAndCheckStability()) {
 
         }
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;
         System.out.println("Simulation ended");
         System.out.println("Elapsed time: " + elapsedTime + "ms");
+        System.out.println("Total calculations: " + Grid.totalCalculations);
     }
 
     public static void main(String[] args) {
 
         HeatSimulationApp app = new HeatSimulationApp();
-        logic = new HeatSimLogic(Settings.GRID_WIDTH, Settings.GRID_HEIGHT);
+        logic = new Logic(Settings.GRID_WIDTH, Settings.GRID_HEIGHT);
         logic.heatRandomPoint(Settings.RANDOM_POINTS_NUM);
         System.out.println("Simulation started");
-        System.out.println("Total calculations: " + Grid.totalCalculations);
+
 
         if(Settings.GRAPHICS_ENABLED) {
             launch(args);

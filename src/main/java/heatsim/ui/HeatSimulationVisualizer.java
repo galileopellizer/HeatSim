@@ -1,8 +1,9 @@
 package heatsim.ui;
 
+import heatsim.settings.Settings;
 import heatsim.simulation.Cell;
 import heatsim.simulation.Grid;
-import heatsim.simulation.HeatSimLogic;
+import heatsim.simulation.Logic;
 import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -94,7 +95,7 @@ public class HeatSimulationVisualizer {
         for (int i = 0; i < GRID_WIDTH; i++) {
             for (int j = 0; j < GRID_HEIGHT; j++) {
 
-                gc.setFill(getColor(grid.getCell(i, j, false).getTemperature())); // Začetna barva
+                gc.setFill(getColor(grid.getCell(i, j).getTemperature())); // Začetna barva
                 gc.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 
                 if(CELL_SIZE > 3) {
@@ -160,13 +161,13 @@ public class HeatSimulationVisualizer {
     }
 
 
-    HeatSimLogic logic;
+    Logic logic;
     AtomicBoolean isMousePressed = new AtomicBoolean(false);
     AtomicInteger cellX = new AtomicInteger();
     AtomicInteger cellY = new AtomicInteger();
     Cell clickedCell = null;
 
-    public Canvas initializeUI(Stage stage, HeatSimLogic logic, int w, int h) {
+    public Canvas initializeUI(Stage stage, Logic logic, int w, int h) {
         GRID_WIDTH = w;
         GRID_HEIGHT = h;
         this.logic = logic;
@@ -217,7 +218,7 @@ public class HeatSimulationVisualizer {
         gridCanvas.setOnMousePressed(this::mousePressed);
 
         gridCanvas.setOnMouseReleased(event -> {
-            //clickedCell.setClicked(false);
+            if(Settings.RECALCULATE_CLICKED_CELLS) clickedCell.setClicked(false);
             isMousePressed.set(false);
         });
 
@@ -225,7 +226,7 @@ public class HeatSimulationVisualizer {
             @Override
             public void handle(long now) {
                 if (isMousePressed.get()) {
-                    Cell cell = logic.grid.getCell(cellX.get(), cellY.get(), true);
+                    Cell cell = logic.grid.getCellWithinBorder(cellX.get(), cellY.get());
                     if(cell != null) {
                         logic.grid.heatUpCell(cell);
                         drawGrid(gc, logic.grid);
@@ -259,7 +260,7 @@ public class HeatSimulationVisualizer {
         cellX.set((int) (mouseX / CELL_SIZE));
         cellY.set((int) (mouseY / CELL_SIZE));
 
-        clickedCell = logic.grid.getCell(cellX.get(), cellY.get(), true);
+        clickedCell = logic.grid.getCellWithinBorder(cellX.get(), cellY.get());
 
         if (clickedCell != null) {
             clickedCell.setClicked(true);
