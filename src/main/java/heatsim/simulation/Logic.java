@@ -32,12 +32,4 @@ public class Logic {
     }
 
 
-    public boolean recalculateAndCheckStability() {
-
-        grid.recalculateGrid();
-        return grid.maxTempChange <= Settings.TEMPERATURE_CHANGE_THRESHOLD;
-
-    }
-
-
 }

@@ -12,9 +12,6 @@ import javafx.scene.canvas.GraphicsContext;
 
 public class HeatSimulationApp extends Application {
 
-    //randPoints -> 0 in CHECK_TEMP -> false (za najboljsi effect - ni nujno), nato lahko klikaš po posameznih celicah, ko jih segreješ do 100 ostanejo konstantno 100
-
-
     private static Logic logic;
 
     @Override
@@ -23,7 +20,7 @@ public class HeatSimulationApp extends Application {
         //stage.show();
 
         HeatSimulationVisualizer visualizer = new HeatSimulationVisualizer();
-        Canvas canvas = visualizer.initializeUI(stage, logic, Settings.GRID_WIDTH, Settings.GRID_HEIGHT);
+        Canvas canvas = visualizer.initializeUI(stage, logic);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
 
@@ -49,7 +46,11 @@ public class HeatSimulationApp extends Application {
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if(logic.recalculateAndCheckStability() && Settings.END_SIM_ON_TEMPERATURE_THRESHOLD_REACHED) {
+                visualizer.drawGrid(gc, logic.grid);
+
+                logic.grid.recalculateGrid();
+
+                if(Settings.END_SIM_ON_TEMPERATURE_THRESHOLD_REACHED && logic.grid.isStable()) {
                     long endTime = System.currentTimeMillis();
                     long elapsedTime = endTime - startTime;
                      System.out.println("Simulation ended");
@@ -57,7 +58,6 @@ public class HeatSimulationApp extends Application {
                     System.out.println("Total calculations: " + Grid.totalCalculations);
                     stop();
                 }
-                visualizer.drawGrid(gc, logic.grid);
             }
         };
 
@@ -67,8 +67,8 @@ public class HeatSimulationApp extends Application {
     public void runHeadLessSimulation() {
 
         long startTime = System.currentTimeMillis();
-        while(logic.recalculateAndCheckStability()) {
-
+        while(!Settings.END_SIM_ON_TEMPERATURE_THRESHOLD_REACHED || logic.grid.isStable()) {
+            logic.grid.recalculateGrid();
         }
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;

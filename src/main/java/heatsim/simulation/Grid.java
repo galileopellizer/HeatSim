@@ -7,7 +7,7 @@ public class Grid {
     Cell[][] grid;
     int width;
     int height;
-    double maxTempChange = 100;
+    double maxTempChange = 0;
     public static int totalCalculations = 0;
 
 
@@ -15,8 +15,8 @@ public class Grid {
         this.width = width;
         this.height = height;
         grid = new Cell[width][height];
-        for (int x = 0; x < height; x++) {
-            for (int y = 0; y < width; y++) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
                 grid[x][y] = new Cell(x, y, 0);
             }
         }
@@ -27,8 +27,8 @@ public class Grid {
         this.maxTempChange = other.maxTempChange;
         this.grid = new Cell[width][height];
 
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 this.grid[i][j] = new Cell(other.grid[i][j]);
             }
         }
@@ -84,32 +84,39 @@ public class Grid {
     public void recalculateGrid() {
         Grid gridCopy = new Grid(this);
 
-        for (int i = 0; i < this.height; i++) {
-            for (int j = 0; j < this.width; j++) {
+        maxTempChange = 0;
+        for (int i = Settings.BORDER_WIDTH; i < this.width-Settings.BORDER_WIDTH; i++) {
+            for (int j = Settings.BORDER_WIDTH; j < this.height-Settings.BORDER_WIDTH; j++) {
 
-                Cell cellCopy = gridCopy.getCellWithinBorder(i, j);
+                Cell cellCopy = gridCopy.getCell(i, j);
                 if(!shouldCalculateCell(cellCopy)) continue;
 
-                double tempBeforeCalculation = cellCopy.getTemperature();
-
-                Cell[] neighbors = gridCopy.getNeighbors(cellCopy);
-                double totalTemperature = sumTemperature(neighbors);
-                totalTemperature /= neighbors.length;
+                double totalTemperature = gridCopy.getNeighborsAverageTemp(cellCopy);
 
                 if(totalTemperature == 0) continue; // Needs testing
                 totalCalculations++;
 
-                Cell cell = this.getCellWithinBorder(cellCopy.getX(), cellCopy.getY());
+                Cell cell = this.getCell(cellCopy.getX(), cellCopy.getY());
                 cell.setTemperature(totalTemperature);
 
 
-                if(tempBeforeCalculation == cell.getTemperature()) continue;
-
-                double change = Math.abs(tempBeforeCalculation - cell.getTemperature());
-
-                if(change < this.maxTempChange) {this.maxTempChange = change;}
+                updateMaxTempChange(getTempDifference(cellCopy.getTemperature(), cell.getTemperature()));
             }
         }
+    }
+
+    private double getNeighborsAverageTemp(Cell cell) {
+        Cell[] neighbors = this.getNeighbors(cell);
+        return sumTemperature(neighbors) / neighbors.length;
+    }
+
+    private void updateMaxTempChange(double temp) {
+        if(temp == 0) return;
+        if(temp > this.maxTempChange) this.maxTempChange = temp;
+    }
+
+    private double getTempDifference(double temp1, double temp2) {
+        return Math.abs(temp1 - temp2);
     }
 
     private double sumTemperature(Cell[] cells) {
@@ -122,5 +129,9 @@ public class Grid {
 
     private boolean shouldCalculateCell(Cell cell) {
         return !(cell == null || cell.isClicked());
+    }
+
+    public boolean isStable() {
+        return maxTempChange <= Settings.TEMPERATURE_CHANGE_THRESHOLD;
     }
 }

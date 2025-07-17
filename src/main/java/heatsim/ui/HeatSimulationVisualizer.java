@@ -167,14 +167,13 @@ public class HeatSimulationVisualizer {
     AtomicInteger cellY = new AtomicInteger();
     Cell clickedCell = null;
 
-    public Canvas initializeUI(Stage stage, Logic logic, int w, int h) {
-        GRID_WIDTH = w;
-        GRID_HEIGHT = h;
+    public Canvas initializeUI(Stage stage, Logic logic) {
+        GRID_WIDTH = Settings.GRID_WIDTH;
+        GRID_HEIGHT = Settings.GRID_HEIGHT;
         this.logic = logic;
 
         double max = Math.max(GRID_WIDTH, GRID_HEIGHT);
         CELL_SIZE = 500 / max;
-        if ((int) CELL_SIZE <= 1) CELL_SIZE = 1;
 
         Canvas gridCanvas = new Canvas(GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
         GraphicsContext gc = gridCanvas.getGraphicsContext2D();
