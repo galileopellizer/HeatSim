@@ -217,7 +217,7 @@ public class HeatSimulationVisualizer {
         gridCanvas.setOnMousePressed(this::mousePressed);
 
         gridCanvas.setOnMouseReleased(event -> {
-            if(Settings.RECALCULATE_CLICKED_CELLS) clickedCell.setClicked(false);
+            if(Settings.RECALCULATE_CLICKED_CELLS && clickedCell != null) clickedCell.setClicked(false);
             isMousePressed.set(false);
         });
 
