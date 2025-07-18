@@ -2,11 +2,13 @@ package heatsim.settings;
 
 public class Settings {
 
+    public final static int GRID_SIZE = 500;
+
     public final static int GRID_WIDTH = 10;
 
-    public final static  int GRID_HEIGHT = 50;
+    public final static  int GRID_HEIGHT = 10;
 
-    public final static  int RANDOM_POINTS_NUM = 2;
+    public final static  int RANDOM_POINTS_NUM = 3;
 
     public final static  boolean GRAPHICS_ENABLED = true;
 
@@ -21,4 +23,20 @@ public class Settings {
     public final static double HEAT_RETENTION_THRESHOLD = 100;
 
     public final static boolean RECALCULATE_CLICKED_CELLS = true;
+
+    public static final int Y_LABELS_MARGIN = 15;
+
+    public static final int X_LABELS_MARGIN = 15;
+
+    public static final int MARGIN_BETWEEN_LABELS = 50;
+
+    public static final int TEMP_BAR_LABELS_MARGIN = 40;
+
+    public static final int GRID_BAR_MARGIN = 50;
+
+    public static final int APP_WIDTH = 800;
+
+    public static final int APP_HEIGHT = 600;
+
+    public static final String APP_TITLE = "Heat Simulation";
 }

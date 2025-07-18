@@ -7,7 +7,7 @@ public class Grid {
     Cell[][] grid;
     int width;
     int height;
-    double maxTempChange = 0;
+    double maxTempChange = -1;
     public static int totalCalculations = 0;
 
 
@@ -132,6 +132,6 @@ public class Grid {
     }
 
     public boolean isStable() {
-        return maxTempChange <= Settings.TEMPERATURE_CHANGE_THRESHOLD;
+        return maxTempChange <= Settings.TEMPERATURE_CHANGE_THRESHOLD && maxTempChange != -1;
     }
 }

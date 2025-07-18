@@ -14,7 +14,7 @@ public class Logic {
         grid = new Grid(width, height);
     }
 
-    public void heatRandomPoint(int numberOfPoints) {
+    public void heatRandomPoints(int numberOfPoints) {
 
         for(int i = 0; i < numberOfPoints; i++) {
             Cell randomCell = getUntouchedRandomCell();
