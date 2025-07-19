@@ -6,23 +6,21 @@ public class Cell {
     private double temperature;
 
 
-    private final int x;
-    private final int y;
+    private Position position;
     private boolean isClicked;
 
+    private boolean dirty = true;
 
 
-    public Cell(int x, int y, double temperature) {
+    public Cell(Position position, double temperature) {
         this.temperature = 0;
-        this.x = x;
-        this.y = y;
+        this.position = position;
         this.isClicked = false;
     }
 
     public Cell(Cell other) {
         this.temperature = other.temperature;
-        this.x = other.x;
-        this.y = other.y;
+        this.position = other.position;
         this.isClicked = other.isClicked;
     }
 
@@ -41,20 +39,38 @@ public class Cell {
     public void setTemperature(double temperature) {
         if(temperatureAboveThreshold()) return;
         this.temperature = temperature;
+        markDirty();
     }
     public void raiseTemperature(double amount) {
         if(temperatureAboveThreshold()) return;
         this.temperature += amount;
+        markDirty();
     }
 
     private boolean temperatureAboveThreshold() {
         return this.temperature >= Settings.HEAT_RETENTION_THRESHOLD;
     }
 
+    public Position getPosition() {
+        return position;
+    }
+
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void markDirty() {
+        this.dirty = true;
+    }
+
+    public void clearDirty() {
+        this.dirty = false;
+    }
+
     public int getX() {
-        return this.x;
+        return this.position.x();
     }
     public int getY() {
-        return this.y;
+        return this.position.y();
     }
 }

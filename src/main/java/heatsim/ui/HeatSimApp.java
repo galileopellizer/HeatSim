@@ -1,7 +1,7 @@
 package heatsim.ui;
 
 import heatsim.settings.Settings;
-import heatsim.simulation.Grid;
+import heatsim.simulation.VisualGrid;
 import heatsim.simulation.Logic;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -41,7 +41,7 @@ public class HeatSimApp extends Application {
             public void handle(long now) {
                 visualizer.drawGrid();
 
-                logic.grid.recalculateGrid();
+                logic.getGrid().recalculateGrid();
 
                 if (checkEndConditionAndStop()) stop();
 
@@ -52,18 +52,18 @@ public class HeatSimApp extends Application {
     }
 
     private boolean checkEndConditionAndStop() {
-        if (!(Settings.END_SIM_ON_TEMPERATURE_THRESHOLD_REACHED && logic.grid.isStable())) return false;
+        if (!(Settings.END_SIM_ON_TEMPERATURE_THRESHOLD_REACHED && logic.getGrid().isStable())) return false;
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;
         System.out.println("Simulation ended");
         System.out.println("Elapsed time: " + elapsedTime + "ms");
-        System.out.println("Total calculations: " + Grid.totalCalculations);
+        System.out.println("Total calculations: " + VisualGrid.totalCalculations);
         return true;
     }
 
     public void runHeadLessSimulation() {
         while (!checkEndConditionAndStop()) {
-            logic.grid.recalculateGrid();
+            logic.getGrid().recalculateGrid();
         }
     }
 

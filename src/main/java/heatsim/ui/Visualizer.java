@@ -2,8 +2,9 @@ package heatsim.ui;
 
 import heatsim.settings.Settings;
 import heatsim.simulation.Cell;
-import heatsim.simulation.Grid;
+import heatsim.simulation.VisualGrid;
 import heatsim.simulation.Logic;
+import heatsim.simulation.Position;
 import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,15 +27,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Visualizer {
 
-    private static int GRID_WIDTH;
-    private static int GRID_HEIGHT;
-
-    private static  double  CELL_SIZE;
+    private static double CELL_SIZE;
+    VisualGrid grid;
 
     Logic logic;
     Stage stage;
-    Canvas canvas;
-    GraphicsContext gc;
+    Canvas gridCanvas, borderCanvas;
+    GraphicsContext gridGC, borderGC;
+
+
     AtomicBoolean isMousePressed = new AtomicBoolean(false);
     AtomicInteger cellX = new AtomicInteger();
     AtomicInteger cellY = new AtomicInteger();
@@ -43,58 +44,26 @@ public class Visualizer {
     public Visualizer(Stage stage, Logic logic) {
         this.stage = stage;
         this.logic = logic;
-        GRID_HEIGHT = Settings.GRID_HEIGHT;
-        GRID_WIDTH = Settings.GRID_WIDTH;
-        //canvas = this.initializeUI();
-        //this.gc = canvas.getGraphicsContext2D();
+        CELL_SIZE = getCellSize();
+        grid = (VisualGrid) logic.getGrid();
     }
 
 
-    private int calculateStep(int gridSize) {
-        int gridLength= (gridSize * (int)CELL_SIZE);
 
-        int labelMargin = gridLength / (gridSize);
-
-        if(labelMargin >= Settings.MARGIN_BETWEEN_LABELS) return 1;
-        int step = 5;
-
-        //steps vrednosti 1, 5, 10
-        while(labelMargin < Settings.MARGIN_BETWEEN_LABELS) {
-
-
-            if(step > gridSize) {
-                step = gridSize;
-                break;
-            }
-            labelMargin = gridLength / (gridSize / step);
-            step += (labelMargin < Settings.MARGIN_BETWEEN_LABELS) ? 5 : 0;
-
-        }
-        return step;
-    }
 
     public void drawGrid() {
-        Grid grid = logic.grid;
-        for (int i = 0; i < GRID_WIDTH; i++) {
-            for (int j = 0; j < GRID_HEIGHT; j++) {
+        for (int i = 0; i < Settings.GRID_WIDTH; i++) {
+            for (int j = 0; j < Settings.GRID_HEIGHT; j++) {
+                Cell cell = grid.getCell(new Position(i, j));
+                if(!cell.isDirty()) continue;
 
-                gc.setFill(getTemperatureColor(grid.getCell(i, j).getTemperature())); // Začetna barva
-                gc.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                double x = i * CELL_SIZE;
+                double y = j * CELL_SIZE;
+                double size = CELL_SIZE + ((CELL_SIZE < Settings.MIN_CELL_SIZE_TO_DRAW_BORDER) ? 0.5 : 0);
 
-                if(CELL_SIZE > 3) {
-                    gc.setStroke(Color.BLACK); // Mrežna črta
-                    gc.strokeRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                }
-                /*
-                // Draw temperature as text, debugging
-                gc.setFill(Color.BLACK);
-                gc.setFont(new Font(10));
-                gc.fillText(
-                        String.format("%.0f", grid.getCell(i, j, false).getTemperature()),
-                        i * CELL_SIZE + 2,
-                        j * CELL_SIZE + 12
-                );
-                */
+                gridGC.setFill(getTemperatureColor(cell.getTemperature()));
+                gridGC.fillRect(x, y, size, size);
+                if(cell.getTemperature() < Settings.HEAT_RETENTION_THRESHOLD) cell.clearDirty();
             }
         }
     }
@@ -106,8 +75,8 @@ public class Visualizer {
         double hueMin = (temp > 40) ? 120 : 240;
         double hueMax = (temp > 50) ? 0 : 110;
 
-        double hue =  hueMin + ((temp - tempMin) / (tempMax - tempMin)) * (hueMax - hueMin);
-        if(temp > 100) hue = 0;
+        double hue = hueMin + ((temp - tempMin) / (tempMax - tempMin)) * (hueMax - hueMin);
+        if (temp > 100) hue = 0;
 
         return Color.hsb(hue, 1, 1);
     }
@@ -128,7 +97,7 @@ public class Visualizer {
             Text tempLabel = new Text(String.valueOf(i));
             tempLabel.setFill(Color.BLACK);
             tempLabel.setTranslateX(Settings.TEMP_BAR_LABELS_MARGIN);
-            tempLabel.setTranslateY((Settings.GRID_SIZE / 2) - (i * (Settings.GRID_SIZE / 100)));
+            tempLabel.setTranslateY((Settings.GRID_SIZE / 2.) - (i * (Settings.GRID_SIZE / 100.)));
             labels.add(tempLabel);
         }
         return labels;
@@ -149,97 +118,71 @@ public class Visualizer {
         return legendPane;
     }
 
-
-
-
-    private void setCellSize() {
-        double max = Math.max(GRID_WIDTH, GRID_HEIGHT);
-        CELL_SIZE = Settings.GRID_SIZE / max;
-    }
-
-    private ObservableList<Text> generateGridLabels(LabelLayout label) {
-        ObservableList<Text> labels = FXCollections.observableArrayList();
-        for (int i = label.step; i <= label.gridSize; i += label.step) {
-            Text text = new Text(String.valueOf(i));
-            text.setFill(Color.BLACK);
-            text.setTranslateX(label.xMargin.apply(i));
-            text.setTranslateY(label.yMargin.apply(i));
-            labels.add(text);
-        }
-        return labels;
-    }
-
-    private double computeYLabelYOffset(int x) {
-        return -((x) * CELL_SIZE) + (CELL_SIZE/2);
-    }
-    private double computeYLabelXOffset(int x) {
-        return -Settings.Y_LABELS_MARGIN;
-    }
-
-    private double computeXLabelXOffset(int x) {
-        return CELL_SIZE * x - (CELL_SIZE / 2);
-    }
-
-    private double computeXLabelYOffset(int x) {
-        return Settings.X_LABELS_MARGIN;
-    }
-
-    private Text getLabelZero() {
-        Text zero = new Text("0");
-        zero.setTranslateY(Settings.X_LABELS_MARGIN);
-        zero.setTranslateX(-Settings.Y_LABELS_MARGIN);
-        return zero;
-    }
-
-    private ObservableList<Text> getGridLabels() {
-        ObservableList<Text> labels = FXCollections.observableArrayList();
-
-        int stepX = calculateStep(GRID_WIDTH);
-        int stepY = calculateStep(GRID_HEIGHT);
-        LabelLayout labelX = new LabelLayout(stepX, GRID_WIDTH, this::computeXLabelXOffset, this::computeXLabelYOffset);
-        LabelLayout labelY = new LabelLayout(stepY, GRID_HEIGHT, this::computeYLabelXOffset, this::computeYLabelYOffset);
-        labels.addAll(generateGridLabels(labelX));
-        labels.addAll(generateGridLabels(labelY));
-        labels.add(getLabelZero());
-        return labels;
-    }
-
-    private StackPane getNumberLabels() {
-        StackPane numbers = new StackPane();
-
-
-        numbers.setTranslateX(- ((GRID_WIDTH * CELL_SIZE) / 2));
-        numbers.setTranslateY(((GRID_HEIGHT * CELL_SIZE) / 2));
-
-        numbers.getChildren().addAll(getGridLabels());
-        return numbers;
+    private double getCellSize() {
+        double max = Math.max(Settings.GRID_WIDTH, Settings.GRID_HEIGHT);
+        return Settings.GRID_SIZE / max;
     }
 
     private StackPane getTemperatureLegend() {
         StackPane legend = getTemperatureColorBar();
-        legend.setTranslateX((GRID_WIDTH * CELL_SIZE) / 2 + Settings.GRID_BAR_MARGIN);
+        legend.setTranslateX((Settings.GRID_WIDTH * CELL_SIZE) / 2 + Settings.GRID_BAR_MARGIN);
         legend.setTranslateY(0);
         return legend;
     }
 
-    public void initializeUI() {
-        setCellSize();
+    private void initCanvases() {
+        double width = Settings.GRID_WIDTH * CELL_SIZE;
+        double height = Settings.GRID_HEIGHT * CELL_SIZE;
 
-        Canvas gridCanvas = new Canvas(GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
-        gc = gridCanvas.getGraphicsContext2D();
-        this.drawGrid();
+        gridCanvas = new Canvas(width, height);
+        borderCanvas = new Canvas(width, height);
 
-        StackPane root = new StackPane();
-        gridCanvas.setFocusTraversable(true);
+        gridGC = gridCanvas.getGraphicsContext2D();
+        borderGC = borderCanvas.getGraphicsContext2D();
 
+        drawBorderGrid();
 
+    }
 
-        gridCanvas.setOnMousePressed(this::mousePressed);
-
-        gridCanvas.setOnMouseReleased(event -> {
-            if(Settings.RECALCULATE_CLICKED_CELLS && clickedCell != null) clickedCell.setClicked(false);
+    private void setupGridClickListeners() {
+        borderCanvas.setOnMousePressed(this::mousePressed);
+        borderCanvas.setOnMouseReleased(event -> {
+            if (Settings.RECALCULATE_CLICKED_CELLS && clickedCell != null) clickedCell.setClicked(false);
             isMousePressed.set(false);
         });
+    }
+
+    private StackPane createRootPane() {
+        StackPane root = new StackPane();
+        root.getChildren().add(getTemperatureLegend());
+        root.getChildren().add(new LabelGenerator(CELL_SIZE).getNumberLabels());
+        root.getChildren().add(gridCanvas);
+        root.getChildren().add(borderCanvas);
+
+        return root;
+    }
+
+    private void drawBorderGrid() {
+        if (CELL_SIZE > Settings.MIN_CELL_SIZE_TO_DRAW_BORDER) {
+            borderGC.setStroke(Color.BLACK);
+
+            for (int i = 0; i <= Settings.GRID_WIDTH; i++) {
+                double x = i * CELL_SIZE + 0.25;
+                borderGC.strokeLine(x, 0, x, Settings.GRID_HEIGHT * CELL_SIZE);
+            }
+
+            for (int j = 0; j <= Settings.GRID_HEIGHT; j++) {
+                double y = j * CELL_SIZE + 0.25;
+                borderGC.strokeLine(0, y, Settings.GRID_WIDTH * CELL_SIZE, y);
+            }
+        }
+    }
+
+    public void initializeUI() {
+        initCanvases();
+        setupGridClickListeners();
+
+
 
         AnimationTimer timer = new AnimationTimer() {
             @Override
@@ -249,12 +192,7 @@ public class Visualizer {
         };
         timer.start();
 
-        root.getChildren().add(getTemperatureLegend());
-        root.getChildren().add(getNumberLabels());
-
-        root.getChildren().add(gridCanvas);
-
-        initializeStage(root);
+        initializeStage(createRootPane());
     }
 
     private void initializeStage(StackPane root) {
@@ -271,7 +209,7 @@ public class Visualizer {
         cellX.set((int) (mouseX / CELL_SIZE));
         cellY.set((int) (mouseY / CELL_SIZE));
 
-        clickedCell = logic.grid.getCellWithinBorder(cellX.get(), cellY.get());
+        clickedCell = grid.getCellWithinBorder(cellX.get(), cellY.get());
 
         isMousePressed.set(event.isPrimaryButtonDown());
         if (clickedCell == null) return;
@@ -280,9 +218,9 @@ public class Visualizer {
 
     private void heatCellIfMousePressed() {
         if (!isMousePressed.get()) return;
-        Cell cell = logic.grid.getCellWithinBorder(cellX.get(), cellY.get());
-        if(cell == null) return;
-        logic.grid.heatUpCell(cell);
+        Cell cell = grid.getCellWithinBorder(cellX.get(), cellY.get());
+        if (cell == null) return;
+        grid.heatUpCell(cell);
         drawGrid();
     }
 }
