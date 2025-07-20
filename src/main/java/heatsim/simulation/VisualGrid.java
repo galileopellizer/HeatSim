@@ -5,8 +5,6 @@ import java.util.Random;
 
 public class VisualGrid extends Grid {
     Cell[][] grid;
-    public static int totalCalculations = 0;
-
 
     public VisualGrid(int width, int height) {
         this.width = width;

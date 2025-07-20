@@ -54,11 +54,13 @@ public class FastGrid extends Grid {
                 amount += previousTemperatures[i+1][j];
                 amount += previousTemperatures[i][j-1];
                 amount += previousTemperatures[i][j+1];
+                if(amount == 0) continue;
                 amount /= 4;
                 temperatures[i][j] = amount;
                 if(Math.abs(amount-previousTemperatures[i][j]) > this.maxTempChange) {
                     this.maxTempChange = Math.abs(amount-previousTemperatures[i][j]);
                 }
+                totalCalculations++;
             }
         }
 
