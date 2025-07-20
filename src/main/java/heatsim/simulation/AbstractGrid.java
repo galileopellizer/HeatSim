@@ -1,9 +1,11 @@
 package heatsim.simulation;
 
-public abstract class Grid {
+import java.util.concurrent.atomic.AtomicLong;
+
+public abstract class AbstractGrid {
     protected int width;
     protected int height;
-    public static long totalCalculations = 0;
+    public static AtomicLong totalCalculations = new AtomicLong(0);
     protected double maxTempChange = -1;
 
     public int getWidth() { return width; }

@@ -2,15 +2,15 @@ package heatsim.settings;
 
 public class Settings {
 
+    public final static Mode MODE = Mode.SEQUENTIAL;
+
     public final static int GRID_SIZE = 500;
 
-    public final static int GRID_WIDTH = 5000;
+    public final static int GRID_WIDTH = 50;
 
-    public final static  int GRID_HEIGHT = 5000;
+    public final static  int GRID_HEIGHT = 50;
 
-    public final static  int RANDOM_POINTS_NUM = 500;
-
-    public final static  boolean GRAPHICS_ENABLED = false;
+    public final static  int RANDOM_POINTS_NUM = 5;
 
     public final static  boolean END_SIM_ON_TEMPERATURE_THRESHOLD_REACHED = true;
 
@@ -18,7 +18,7 @@ public class Settings {
 
     public final static double CLICK_HEATING_RATE = 0.5;
 
-    public final static int BORDER_WIDTH = 1;
+    public final static int BORDER_SIZE = 1;
 
     public final static double HEAT_RETENTION_THRESHOLD = 100;
 

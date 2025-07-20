@@ -1,11 +1,15 @@
 package heatsim.ui;
 
+import heatsim.settings.Mode;
 import heatsim.settings.Settings;
 import heatsim.simulation.VisualGrid;
 import heatsim.simulation.Logic;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import mpi.MPI;
+
+import java.util.Set;
 
 
 public class HeatSimApp extends Application {
@@ -76,7 +80,7 @@ public class HeatSimApp extends Application {
         System.out.println("Simulation started");
         startTime = System.currentTimeMillis();
 
-        if (Settings.GRAPHICS_ENABLED) {
+        if (Settings.MODE == Mode.VISUAL) {
             launch(args);
         } else {
             app.runHeadLessSimulation();

@@ -3,7 +3,7 @@ package heatsim.simulation;
 import heatsim.settings.Settings;
 import java.util.Random;
 
-public class VisualGrid extends Grid {
+public class VisualGrid extends AbstractGrid {
     Cell[][] grid;
 
     public VisualGrid(int width, int height) {
@@ -30,7 +30,7 @@ public class VisualGrid extends Grid {
     }
 
     public Cell getRandomCellWithinBorder(Random random) {
-        int borderWidth = Settings.BORDER_WIDTH;
+        int borderWidth = Settings.BORDER_SIZE;
         int x = random.nextInt(borderWidth, width-borderWidth);
         int y = random.nextInt(borderWidth, height-borderWidth);
         return grid[x][y];
@@ -62,7 +62,7 @@ public class VisualGrid extends Grid {
     }
 
     public Cell getCellWithinBorder(int x, int y) {
-        int offset = Settings.BORDER_WIDTH;
+        int offset = Settings.BORDER_SIZE;
 
         int upperXBoundary = width-(1 + offset);
         int upperYBoundary = height-(1 + offset);
@@ -78,8 +78,8 @@ public class VisualGrid extends Grid {
         VisualGrid gridCopy = new VisualGrid(this);
 
         maxTempChange = 0;
-        for (int i = Settings.BORDER_WIDTH; i < this.width-Settings.BORDER_WIDTH; i++) {
-            for (int j = Settings.BORDER_WIDTH; j < this.height-Settings.BORDER_WIDTH; j++) {
+        for (int i = Settings.BORDER_SIZE; i < this.width-Settings.BORDER_SIZE; i++) {
+            for (int j = Settings.BORDER_SIZE; j < this.height-Settings.BORDER_SIZE; j++) {
 
                 Cell cellCopy = gridCopy.getCell(new Position(i, j));
                 if(!shouldCalculateCell(cellCopy)) continue;
@@ -87,13 +87,12 @@ public class VisualGrid extends Grid {
                 double totalTemperature = gridCopy.getNeighborsAverageTemp(cellCopy);
 
                 if(totalTemperature == 0) continue; // Needs testing
-                totalCalculations++;
 
                 Cell cell = this.getCell(cellCopy.getPosition());
                 cell.setTemperature(totalTemperature);
-
-
                 updateMaxTempChange(getTempDifference(cellCopy.getTemperature(), cell.getTemperature()));
+
+                totalCalculations.incrementAndGet();
             }
         }
     }

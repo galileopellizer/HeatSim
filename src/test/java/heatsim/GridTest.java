@@ -3,7 +3,7 @@ package heatsim;
 import heatsim.settings.Settings;
 import heatsim.simulation.Cell;
 import heatsim.simulation.VisualGrid;
-import heatsim.simulation.FastGrid;
+import heatsim.simulation.SequentialGrid;
 import heatsim.simulation.Position;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,7 @@ class GridTest {
         Random rand = new Random(1);
 
         // Create both grids
-        FastGrid fastGrid = new FastGrid(width, height);
+        SequentialGrid sequentialGrid = new SequentialGrid(width, height);
         VisualGrid visualGrid = new VisualGrid(width, height);
 
         // Set the same random hot points in both grids
@@ -46,19 +46,19 @@ class GridTest {
 
             // Set temperature in FastGrid at the same position
             Position pos = randomCell.getPosition();
-            fastGrid.setTemperature(pos.x(), pos.y(), initialTemp);
+            sequentialGrid.setTemperature(pos.x(), pos.y(), initialTemp);
         }
 
         // Run calculation step
         do {
-            fastGrid.recalculateGrid();
+            sequentialGrid.recalculateGrid();
             visualGrid.recalculateGrid();
-        }while(!fastGrid.isStable() && !visualGrid.isStable());
+        }while(!sequentialGrid.isStable() && !visualGrid.isStable());
 
         // Compare results
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                double fastTemp = fastGrid.getTemperature(i, j);
+                double fastTemp = sequentialGrid.getTemperature(i, j);
                 double visualTemp = visualGrid.getCell(new Position(i, j)).getTemperature();
                 assertEquals(fastTemp, visualTemp, 1e-6,
                         "Mismatch at (" + i + "," + j + ")");
