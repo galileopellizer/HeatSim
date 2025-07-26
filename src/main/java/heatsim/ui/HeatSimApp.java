@@ -7,7 +7,6 @@ import heatsim.simulation.Logic;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.stage.Stage;
-import mpi.MPI;
 
 import java.util.Set;
 

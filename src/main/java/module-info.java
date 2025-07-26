@@ -3,8 +3,7 @@ module heatsim {
     requires javafx.fxml;
     requires org.controlsfx.controls;
     requires jdk.unsupported.desktop;
-    requires mpj;
-
+    
     exports heatsim.simulation;
     opens heatsim.simulation to javafx.fxml;
     exports heatsim.ui;
