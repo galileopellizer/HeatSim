@@ -5,14 +5,16 @@ import java.util.Random;
 
 public class Main {
 
-    static final int NUM_POINTS_TO_HEAT = 2;
-    static final int HEIGHT = 10;
-    static final int WIDTH = 10;
+    static final int NUM_POINTS_TO_HEAT = 500;
+    static final int HEIGHT = 5000;
+    static final int WIDTH = 5000;
+    static final double EPSILON = 0.25;
 
     public static void main(String[] args) {
+        float startTime = System.nanoTime();
         MPI.Init(args);
 
-        int[] temperatures = new int[HEIGHT * WIDTH];
+        double[] temperatures = new double[HEIGHT * WIDTH];
         int numPoints = NUM_POINTS_TO_HEAT;
         int rank = MPI.COMM_WORLD.Rank();
         int size = MPI.COMM_WORLD.Size();
@@ -21,9 +23,6 @@ public class Main {
 
         if(rank == root) {
             Random rndm = new Random();
-            for(int i = 0; i < temperatures.length; i++) {
-                temperatures[i] = 0;
-            }
 
             do {
                 int idx = rndm.nextInt(temperatures.length);
@@ -33,29 +32,52 @@ public class Main {
                 }
             }while(numPoints != 0);
 
+        }
 
+        double[] maxDifference = {-1};
 
-            for(int i = 0; i < temperatures.length; i++) {
-                System.out.print(temperatures[i] + (((i+1) % WIDTH == 0) ? "\n" : " "));
+        while (maxDifference[0] > EPSILON || maxDifference[0] == -1) {
+            double[] t = recalculate(root, temperatures, rank, size);
+            maxDifference[0] = getMaxDifference(t, temperatures);
+
+            MPI.COMM_WORLD.Bcast(maxDifference, 0, 1, MPI.DOUBLE, root);
+
+            if(rank == root) {
+                //System.out.println("Max difference: " + getMaxDifference(t, temperatures));
+                temperatures = t;
             }
-
         }
 
-        int[] t = recalculate(root, temperatures, rank, size);
-        if(rank == root) {
-            temperatures = t;
-        }
-        int[] t1 = recalculate(root, temperatures, rank, size);
+
+       // double[] t1 = recalculate(root, temperatures, rank, size);
 
 
 
 
 
         MPI.Finalize();
+        float endTime = System.nanoTime();
+
+        if(rank == root) {
+            System.out.println("Max difference: " + maxDifference[0]);
+            System.out.println("Total time: " + ((endTime - startTime) / 1000000) + " ms");
+        }
+
     }
 
-    public static int[] recalculate(int root, int[] temperatures, int rank, int size) {
-        MPI.COMM_WORLD.Bcast(temperatures, 0, temperatures.length, MPI.INT, root);
+    public static double getMaxDifference(double[] arr1, double[] arr2) {
+        double maxDiff = 0;
+        for(int i = 0; i < arr1.length; i++) {
+            double diff = Math.abs(arr1[i] - arr2[i]);
+            if(diff > maxDiff) {
+                maxDiff = diff;
+            }
+        }
+        return maxDiff;
+    }
+
+    public static double[] recalculate(int root, double[] temperatures, int rank, int size) {
+        MPI.COMM_WORLD.Bcast(temperatures, 0, temperatures.length, MPI.DOUBLE, root);
         //System.out.println("Rank: "+rank+" Temp: "+temperatures[0]);
         int chunkSize = temperatures.length / size;
         int start = rank * chunkSize;
@@ -66,9 +88,9 @@ public class Main {
         if(rank != 0) {
             start += 1;
         }
-        System.out.println("Rank: " + rank + ", Size: " + size + ", Start: " + start + ", End: " + end);
+       // System.out.println("Rank: " + rank + ", Size: " + size + ", Start: " + start + ", End: " + end);
 
-        int[] local = new int[HEIGHT * WIDTH];
+        double[] local = new double[HEIGHT * WIDTH];
         //Arrays.fill(local, 0);
 
         for(int i = start; i <= end; i++) {
@@ -77,23 +99,20 @@ public class Main {
                 local[i] = 100;
                 continue;
             };
-            int[] neighbours = getNeighbours(temperatures, i);
-            int sum = 0;
-            for(int neighbour : neighbours) {
+            double[] neighbours = getNeighbours(temperatures, i);
+            double sum = 0;
+            for(double neighbour : neighbours) {
                 sum += neighbour;
             }
             sum /= 4;
             local[i] = sum;
         }
 
-        int[] result = new int[HEIGHT * WIDTH];
-        MPI.COMM_WORLD.Reduce(local, 0, result, 0, result.length, MPI.INT, MPI.SUM, root);
-        if(rank == root) {
-            for(int i = 0; i < result.length; i++) {
-                System.out.print(result[i] + (((i+1) % WIDTH == 0) ? "\n" : " "));
-            }
-
-        }
+        double[] result = new double[HEIGHT * WIDTH];
+        MPI.COMM_WORLD.Reduce(local, 0, result, 0, result.length, MPI.DOUBLE, MPI.SUM, root);
+//        if(rank == root) {
+//            printGrid(result);
+//        }
         return result;
     }
 
@@ -101,12 +120,18 @@ public class Main {
         return (idx % WIDTH == 0 || idx % WIDTH > WIDTH-2 || idx <= WIDTH || idx >= (WIDTH*HEIGHT) - WIDTH);
     }
 
-    public static int[] getNeighbours(int[] temps, int idx) {
-        int[] neighbours = new int[4];
+    public static double[] getNeighbours(double[] temps, int idx) {
+        double[] neighbours = new double[4];
         neighbours[0] = temps[idx-1];
         neighbours[1] = temps[idx+1];
         neighbours[2] = temps[idx-WIDTH];
         neighbours[3] = temps[idx+WIDTH];
         return neighbours;
+    }
+
+    public static void printGrid(double[] result) {
+        for(int i = 0; i < result.length; i++) {
+            System.out.print(result[i] + (((i+1) % WIDTH == 0) ? "\n" : " | "));
+        }
     }
 }
