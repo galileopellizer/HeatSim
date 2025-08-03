@@ -2,6 +2,7 @@ package heatsim.simulation;
 
 import heatsim.settings.Mode;
 import heatsim.settings.Settings;
+import org.controlsfx.control.PropertySheet;
 
 import java.util.Random;
 
@@ -9,7 +10,7 @@ public class Logic {
 
     private VisualGrid visualGrid;
     private AbstractFastGrid grid;
-    Random rand = new Random(1);
+    Random rand = new Random(Settings.RANDOM_SEED);
 
     public AbstractGrid getGrid() {
         if(Settings.MODE == Mode.VISUAL) return this.visualGrid;
@@ -37,15 +38,13 @@ public class Logic {
     }
 
     private void heatFastGridRandomPoints(int numOfPoints, Random rand) {
-        for(int i = 0; i < numOfPoints; i++) {
-            int x;
-            int y;
-            do {
-                x = rand.nextInt(Settings.BORDER_SIZE, grid.getHeight() - Settings.BORDER_SIZE);
-                y = rand.nextInt(Settings.BORDER_SIZE, grid.getWidth() - Settings.BORDER_SIZE);
-            }while(grid.getTemperature(x, y) != 0);
-            grid.setTemperature(x, y, Settings.HEAT_RETENTION_THRESHOLD);
-        }
+        do{
+            int idx = rand.nextInt(grid.temperatures.length);
+            if(grid.temperatures[idx] == 0 && grid.isInsideBorderBounds(idx)) {
+                grid.setTemperature(idx, Settings.HEAT_RETENTION_THRESHOLD);
+                numOfPoints--;
+            }
+        }while(numOfPoints != 0);
     }
 
     private Cell getUntouchedRandomCell() {

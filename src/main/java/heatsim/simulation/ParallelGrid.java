@@ -31,21 +31,7 @@ public class ParallelGrid extends AbstractFastGrid {
             futures.add(pool.submit(() -> {
                 double localMaxChange = 0;
                 for (int x = fromX; x < toX; x++) {
-                    int rowOffset = x * width;
-                    for (int y = Settings.BORDER_SIZE; y < height - Settings.BORDER_SIZE; y++) {
-                        if (temperatures[rowOffset + y] == Settings.HEAT_RETENTION_THRESHOLD) continue;
-                        double totalSum = getNeighboursSum(rowOffset, y);
-                        if (totalSum == 0) continue;
-                        totalSum /= 4;
-                        temperatures[rowOffset + y] = totalSum;
-
-                        double tempChange = Math.abs(totalSum - previousTemperatures[rowOffset + y]);
-                        if (tempChange > localMaxChange) {
-                            localMaxChange = tempChange;
-                        }
-
-                        //totalCalculations.incrementAndGet();
-                    }
+                    localMaxChange = recalculateTemperaturesAndGetMaxTempChange(x, localMaxChange);
                 }
                 return localMaxChange;
             }));

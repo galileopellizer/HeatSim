@@ -12,6 +12,7 @@ public abstract class AbstractGrid {
     public int getHeight() { return height; }
     public abstract void recalculateGrid();
     public abstract boolean isStable();
+    public double getMaxTemperatureChange() { return maxTempChange; }
 
 
 }
